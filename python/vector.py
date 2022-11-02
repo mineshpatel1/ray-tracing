@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from utils import clamp
 from typing import Union
 
 Number = Union[int, float]
@@ -41,12 +42,15 @@ class Vector:
     def unit_vector(self) -> Vector:
         return self / self.length
 
-    @property
-    def rgb(self) -> str:
-        factor = 255.99
-        ir = int(self.x * factor)
-        ig = int(self.y * factor)
-        ib = int(self.z * factor)
+    def rgb(self, samples: int) -> str:
+        scale = 1.0 / samples
+        r = self.x * scale
+        g = self.y * scale
+        b = self.z * scale
+
+        ir = int(256 * clamp(r, 0, 0.999))
+        ig = int(256 * clamp(g, 0, 0.999))
+        ib = int(256 * clamp(b, 0, 0.999))
         return f"{ir} {ig} {ib}"
 
     def __add__(self, o: Union[Vector, Number]) -> Vector:

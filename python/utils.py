@@ -135,4 +135,12 @@ def deg_to_rad(deg: float) -> float:
     return (deg * pi) / 180
 
 
+def clamp(x: float, lower: float, upper: float) -> float:
+    if x < lower:
+        return lower
+    if x > upper:
+        return upper
+    return x
+
+
 log = create_logger('RayTrace')
