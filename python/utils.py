@@ -130,4 +130,9 @@ def create_logger(name: str, log_file: Optional[str] = None):
 
     return logger
 
+
+def deg_to_rad(deg: float) -> float:
+    return (deg * pi) / 180
+
+
 log = create_logger('RayTrace')

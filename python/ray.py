@@ -14,5 +14,5 @@ class Ray:
     def unit_direction(self) -> Vector:
         return self.direction.unit_vector
 
-    def point_at(self, t: float) -> Point3:
-        self.origin + (self.direction * t)
+    def at(self, t: float) -> Point3:
+        return self.origin + (self.direction * t)

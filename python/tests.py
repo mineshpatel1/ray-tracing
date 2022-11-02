@@ -11,6 +11,7 @@ class TestVectors(unittest.TestCase):
         self.assertEqual((x - y).coords, (-2.0, 0.0, 4.0))
         self.assertEqual((x * y).coords, (8.0, 1.0, 5.0))
         self.assertEqual((x / 2).coords, (1.0, 0.5, 2.5))
+        self.assertEqual(dot(x, x), x.length_squared)
 
 
 unittest.main()
