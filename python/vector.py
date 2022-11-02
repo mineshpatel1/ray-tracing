@@ -51,7 +51,7 @@ class Vector:
 
     def __add__(self, o: Union[Vector, Number]) -> Vector:
         if not isinstance(o, Vector):
-            raise TypeError(f"Cannot add Vec3 with {type(o)}")
+            raise TypeError(f"Cannot add Vector with {type(o)}")
 
         if isinstance(o, Vector):
             return Vector(
@@ -66,11 +66,13 @@ class Vector:
                 self.z + o,
             )
         else:
-            raise TypeError(f"Cannot add Vec3 with {type(o)}")
+            raise TypeError(f"Cannot add Vector with {type(o)}")
 
     def __sub__(self, o: Vector) -> Vector:
         if isinstance(o, Vector):
             return self + o.negative
+        else:
+            raise TypeError(f"Cannot subtract Vector with {type(o)}")
 
     def __mul__(self, o: Union[Vector, Number]) -> Vector:
         if isinstance(o, Vector):
@@ -86,29 +88,28 @@ class Vector:
                 self.z * o,
             )
         else:
-            raise TypeError(f"Cannot multiply Vec3 with {type(o)}")
+            raise TypeError(f"Cannot multiply Vector with {type(o)}")
 
     def __truediv__(self, o: Number) -> Vector:
         if isinstance(o, (int, float)):
             return self * (1 / o)
         else:
-            raise TypeError(f"Cannot divide Vec3 with {type(o)}")
+            raise TypeError(f"Cannot divide Vector with {type(o)}")
 
     def __getitem__(self, i):
         return self.coords[i]
 
     def __str__(self):
-        return f"Vec3({self.x}, {self.y}, {self.z})"
+        return f"Vector({self.x}, {self.y}, {self.z})"
+
 
 Point3 = Vector
 Colour = Vector
 
 
-def dot(x: Union[Number, Vector], y: Union[Number, Vector]) -> Vector:
-    if isinstance(y, Vector):
-        return y * x
-    else:
-        return x * y
+def dot(x: Vector, y: Vector) -> float:
+    prod = x * y
+    return prod.x + prod.y + prod.z
 
 
 def cross(a: Vector, b: Vector) -> Vector:
@@ -117,3 +118,11 @@ def cross(a: Vector, b: Vector) -> Vector:
         (a.z * b.x) - (a.x * b.z),
         (a.x * b.y) - (a.y * b.x),
     )
+
+
+def interpolate(
+    start_colour: Colour,
+    end_colour: Colour,
+    t: float,
+) -> Colour:
+    return (start_colour * (1 - t)) + (end_colour * t)
