@@ -6,6 +6,7 @@ from typing import Callable
 from utils import log
 from ray import Ray
 from vector import (
+    dot,
     interpolate,
     Colour, 
     Point3,
@@ -47,6 +48,23 @@ def write_ppm_file(
     log.info(f'Written PPM image to {path}.')
 
 
+def hit_sphere(
+    centre: Point3,
+    radius: float,
+    ray: Ray,
+) -> bool:
+    # Function describing a ray hitting a sphere:
+    # (b.b)t^2 + 2b(A-C)t + (A-C)(A-C) - r^2 = 0
+    # Quadratic, can solve with quadratic formula
+    oc = ray.origin - centre
+    a = dot(ray.direction, ray.direction)
+    b = dot(ray.direction, oc) * 2
+    c = dot(oc, oc) - (radius ** 2)
+
+    discriminant = (b ** 2) - (4 * a * c)
+    return discriminant > 0
+
+
 def trace_rays():
     # Image
     aspect_ratio = 16 / 9
@@ -68,6 +86,10 @@ def trace_rays():
         ray = Ray(origin, lower_left_corner + (horizontal * u) + (vertical * v))
         t = 0.5 * (ray.unit_direction.y + 1)
 
+        centre = Point3(0, 0, -1)
+        if hit_sphere(centre, 0.5, ray):
+            return Colour(1.0, 0.22, 0.22)
+
         start_colour = Colour(1, 1, 1)
         end_colour = Colour(0.28, 0.62, 0.7)
         return interpolate(start_colour, end_colour, t)
@@ -76,7 +98,7 @@ def trace_rays():
         image_width,
         image_height,
         _gen_colour_from_ray,
-        'background',
+        'first_sphere',
     )
 
 if __name__ == '__main__':
