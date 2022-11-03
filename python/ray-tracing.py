@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import math
+import multiprocessing
 from random import random
 
 from camera import Camera
@@ -19,6 +20,7 @@ from vector import (
 SRC_DIR = os.path.dirname(__file__)
 IMAGE_DIR = os.path.join(SRC_DIR, 'images')
 BLACK = Colour(0, 0, 0)
+NUM_CORES = multiprocessing.cpu_count()
 
 def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
     if depth <= 0:
@@ -39,13 +41,33 @@ def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
     return interpolate(start_colour, end_colour, t)
 
 
+def process_line(
+    j: int,
+    image_width: int,
+    image_height: int,
+    antialias_samples: int,
+    max_depth: int,
+    cam: Camera,
+    world: HittableList,
+) -> str:
+    output = ""
+    for i in range(image_width):
+        colour = Colour(0, 0, 0)
+        for _ in range(antialias_samples):
+            u = (i + random()) / (image_width - 1)
+            v = (j + random()) / (image_height - 1)
+            ray = cam.get_ray(u, v)
+            colour += ray_colour(ray, world, max_depth)
+        output += f"{colour.rgb(antialias_samples)}\n"
+    return j, output
+
 def trace_rays():
     # Image
-    fname = 'depth_of_field'
+    fname = 'parallel'
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
-    antialias_samples = 1
+    antialias_samples = 10
     max_depth = 50
     look_at = Point3(3, 3, 2)
     look_from = Point3(0, 0, -1)
@@ -58,7 +80,7 @@ def trace_rays():
         Vector(0, 1, 0),
         20,
         aspect_ratio,
-        1.5,
+        0.01,
         focus_distance,
     )
 
@@ -76,22 +98,48 @@ def trace_rays():
 
     # Render
     output = f"P3\n{image_width} {image_height}\n255\n"
+    items = []
 
+    log.info("Starting render...")
     for j in range(image_height - 1, -1, -1):
-        print(f"Lines remaining: {str(j).zfill(3)}\r", end="")
-        for i in range(image_width):
-            colour = Colour(0, 0, 0)
-            for _ in range(antialias_samples):
-                u = (i + random()) / (image_width - 1)
-                v = (j + random()) / (image_height - 1)
-                ray = cam.get_ray(u, v)
-                colour += ray_colour(ray, world, max_depth)
-            output += f"{colour.rgb(antialias_samples)}\n"
+        items.append((
+            j,
+            image_width,
+            image_height,
+            antialias_samples,
+            max_depth,
+            cam,
+            world,
+        ))
+
+    # tasks_done = 0
+    def progress(result):
+        j, _ = result
+        n = len(items)
+        if j % math.floor(n / 100) == 0:
+            print(f".", end='', flush=True)
+
+    with multiprocessing.Pool(NUM_CORES) as pool:
+        results = [
+            pool.apply_async(
+                func=process_line,
+                args=args,
+                callback=progress,
+            ) for args in items
+        ]
+
+        pool.close()
+        pool.join()
+
+        for result in results:
+            j, line = result.get()
+            output += line
 
     path = os.path.join(IMAGE_DIR, f'{fname}.ppm')
     with open(path, 'w') as f:
         f.write(output)
 
+    log.newline()
     log.info(f'Written PPM image to {path}.')
 
 if __name__ == '__main__':
