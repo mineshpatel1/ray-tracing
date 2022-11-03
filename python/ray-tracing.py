@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import math
+import time
 from random import random
 
 from camera import Camera
@@ -10,18 +11,23 @@ from hittable import Sphere, HittableList
 from utils import log
 from vector import (
     interpolate,
+    random_in_unit_sphere,
+    random_in_hemisphere,
     Colour, 
     Point3,
 )
 
 SRC_DIR = os.path.dirname(__file__)
 IMAGE_DIR = os.path.join(SRC_DIR, 'images')
-FNAME = 'antialiasing'
 
-def ray_colour(ray: Ray, world: HittableList) -> Colour:
-    record = world.hit(ray, 0, math.pi)
+def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
+    if depth <= 0:
+        return Colour(0, 0, 0)
+
+    record = world.hit(ray, 0.001, math.inf)
     if record:
-        return (record.normal + Colour(1, 1, 1)) * 0.5
+        target = record.p + random_in_hemisphere(record.normal)
+        return ray_colour(Ray(record.p, target - record.p), world, depth - 1) * 0.5
 
     # Colour in the Sky
     t = 0.5 * (ray.unit_direction.y + 1)
@@ -32,10 +38,12 @@ def ray_colour(ray: Ray, world: HittableList) -> Colour:
 
 def trace_rays():
     # Image
+    fname = 'diffuse_material'
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
-    samples = 100
+    antialias_samples = 100
+    max_depth = 50
 
     # Camera
     cam = Camera(aspect_ratio)
@@ -49,17 +57,17 @@ def trace_rays():
     output = f"P3\n{image_width} {image_height}\n255\n"
 
     for j in range(image_height - 1, -1, -1):
-        log.info(f"Lines remaining: {j}")
+        print(f"Lines remaining: {str(j).zfill(3)}\r", end="")
         for i in range(image_width):
             colour = Colour(0, 0, 0)
-            for _ in range(samples):
+            for _ in range(antialias_samples):
                 u = (i + random()) / (image_width - 1)
                 v = (j + random()) / (image_height - 1)
                 ray = cam.get_ray(u, v)
-                colour += ray_colour(ray, world)
-            output += f"{colour.rgb(samples)}\n"
+                colour += ray_colour(ray, world, max_depth)
+            output += f"{colour.rgb(antialias_samples)}\n"
 
-    path = os.path.join(IMAGE_DIR, f'{FNAME}.ppm')
+    path = os.path.join(IMAGE_DIR, f'{fname}.ppm')
     with open(path, 'w') as f:
         f.write(output)
 

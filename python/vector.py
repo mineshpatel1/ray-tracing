@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
+from random import random, uniform
+from typing import Optional, Union
+
 from utils import clamp
-from typing import Union
 
 Number = Union[int, float]
 
@@ -9,6 +12,18 @@ Number = Union[int, float]
 class Vector:
     def __init__(self, x: Number, y: Number, z: Number):
         self.coords = (float(x), float(y), float(z))
+
+    @staticmethod
+    def random() -> Vector:
+        return Vector(random(), random(), random())
+
+    @staticmethod
+    def uniform(min_val: float, max_val: float) -> Vector:
+        return Vector(
+            uniform(min_val, max_val),
+            uniform(min_val, max_val),
+            uniform(min_val, max_val),
+        )
 
     @property
     def x(self) -> float:
@@ -43,10 +58,12 @@ class Vector:
         return self / self.length
 
     def rgb(self, samples: int) -> str:
-        scale = 1.0 / samples
-        r = self.x * scale
-        g = self.y * scale
-        b = self.z * scale
+        scale = 1.0 / samples  # Divide by the number of samples for anti-aliasing
+        
+        # Gamma correct for Gamma-2 by taking the square root 
+        r = (self.x * scale) ** 0.5
+        g = (self.y * scale) ** 0.5
+        b = (self.z * scale) ** 0.5
 
         ir = int(256 * clamp(r, 0, 0.999))
         ig = int(256 * clamp(g, 0, 0.999))
@@ -130,3 +147,21 @@ def interpolate(
     t: float,
 ) -> Colour:
     return (start_colour * (1 - t)) + (end_colour * t)
+
+
+def random_in_unit_sphere() -> Vector:
+    while True:
+        vec = Vector.random()
+        if vec.length_squared >= 1:
+            continue
+        else:
+            return vec
+
+
+def random_in_hemisphere(normal: Vector) -> Vector:
+    in_unit_sphere = random_in_unit_sphere().unit_vector
+    if dot(in_unit_sphere, normal) > 0.0:
+        return in_unit_sphere
+    else:
+        return in_unit_sphere.negative
+
