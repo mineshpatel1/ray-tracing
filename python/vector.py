@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from random import random, uniform
 from typing import Optional, Union
 
-from utils import clamp
+from utils import clamp, log
 
 Number = Union[int, float]
 
@@ -148,6 +148,13 @@ def cross(a: Vector, b: Vector) -> Vector:
 
 def reflect(v: Vector, n: Vector) -> Vector:
     return v - (n * (2 * dot(v, n)))
+
+
+def refract(v: Vector, n: Vector, etai_over_etat: float) -> Vector:
+    cos_theta = min(dot(v.negative, n), 1.0)
+    r_out_perp = (v + (n * cos_theta)) * etai_over_etat
+    r_out_parallel = n * -((abs(1 - r_out_perp.length_squared)) ** 0.5)
+    return r_out_perp + r_out_parallel
 
 
 def interpolate(

@@ -7,7 +7,7 @@ from random import random
 from camera import Camera
 from ray import Ray
 from hittable import Sphere, HittableList
-from material import Diffuse, Metal
+from material import Diffuse, Glass, Metal
 from utils import log
 from vector import (
     interpolate,
@@ -40,11 +40,11 @@ def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
 
 def trace_rays():
     # Image
-    fname = 'multi_materials'
+    fname = 'dielectric'
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
-    antialias_samples = 50
+    antialias_samples = 1
     max_depth = 50
 
     # Camera
@@ -54,8 +54,8 @@ def trace_rays():
     world = HittableList()
 
     material_ground = Diffuse(Colour(0.8, 0.8, 0.0))
-    material_centre = Diffuse(Colour(0.7, 0.3, 0.3))
-    material_left = Metal(Colour(0.8, 0.8, 0.8), 0.3)
+    material_centre = Diffuse(Colour(0.1, 0.2, 0.5))
+    material_left = Glass(1.5)
     material_right = Metal(Colour(0.8, 0.6, 0.2), 1.0)
 
     world.append(Sphere(Point3(0, -100.5, -1), 100, material_ground)) # Ground

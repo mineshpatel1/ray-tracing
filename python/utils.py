@@ -1,3 +1,4 @@
+import math
 import logging
 import types
 from typing import Optional
@@ -132,7 +133,7 @@ def create_logger(name: str, log_file: Optional[str] = None):
 
 
 def deg_to_rad(deg: float) -> float:
-    return (deg * pi) / 180
+    return (deg * math.pi) / 180
 
 
 def clamp(x: float, lower: float, upper: float) -> float:
