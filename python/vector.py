@@ -57,6 +57,11 @@ class Vector:
     def unit_vector(self) -> Vector:
         return self / self.length
 
+    @property
+    def near_zero(self) -> bool:
+        s = 1e-8
+        return abs(self.x) < s and abs(self.y) < s and abs(self.z) < s
+
     def rgb(self, samples: int) -> str:
         scale = 1.0 / samples  # Divide by the number of samples for anti-aliasing
         
@@ -139,6 +144,10 @@ def cross(a: Vector, b: Vector) -> Vector:
         (a.z * b.x) - (a.x * b.z),
         (a.x * b.y) - (a.y * b.x),
     )
+
+
+def reflect(v: Vector, n: Vector) -> Vector:
+    return v - (n * (2 * dot(v, n)))
 
 
 def interpolate(

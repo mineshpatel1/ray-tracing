@@ -1,14 +1,17 @@
 from dataclasses import dataclass
-from vector import dot, Point3, Vector
-from ray import Ray
-from utils import log
 from typing import List, Optional
+
+from material import Material
+from ray import Ray
+from vector import dot, Point3, Vector
+
 
 @dataclass
 class HitRecord:
     p: Point3
     normal: Vector
     t: float
+    material: Material
     front_face: bool = False
 
     def set_face_normal(self, ray: Ray, outward_normal: Vector):
@@ -43,9 +46,15 @@ class HittableList:
 
 
 class Sphere(Hittable):
-    def __init__(self, centre: Point3, radius: float):
+    def __init__(
+        self,
+        centre: Point3,
+        radius: float,
+        material: Material,
+    ):
         self.centre = centre
         self.radius = radius
+        self.material = material
         super(Sphere, self).__init__()
 
     def hit(self, ray: Ray, t_min: float, t_max: float) -> Optional[HitRecord]:
@@ -67,6 +76,6 @@ class Sphere(Hittable):
 
         p = ray.at(t)
         outward_normal = (p - self.centre) / self.radius
-        record = HitRecord(p, outward_normal, t)
+        record = HitRecord(p, outward_normal, t, self.material)
         record.set_face_normal(ray, outward_normal)
         return record

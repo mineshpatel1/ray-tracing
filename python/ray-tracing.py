@@ -2,32 +2,34 @@ from __future__ import annotations
 
 import os
 import math
-import time
 from random import random
 
 from camera import Camera
 from ray import Ray
 from hittable import Sphere, HittableList
+from material import Diffuse, Metal
 from utils import log
 from vector import (
     interpolate,
-    random_in_unit_sphere,
-    random_in_hemisphere,
     Colour, 
     Point3,
 )
 
 SRC_DIR = os.path.dirname(__file__)
 IMAGE_DIR = os.path.join(SRC_DIR, 'images')
+BLACK = Colour(0, 0, 0)
 
 def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
     if depth <= 0:
-        return Colour(0, 0, 0)
+        return BLACK
 
     record = world.hit(ray, 0.001, math.inf)
-    if record:
-        target = record.p + random_in_hemisphere(record.normal)
-        return ray_colour(Ray(record.p, target - record.p), world, depth - 1) * 0.5
+    if record:        
+        scattered, attenuation = record.material.scatter(ray, record)
+        if ray:
+            return attenuation * ray_colour(scattered, world, depth - 1)
+        else:
+            return BLACK
 
     # Colour in the Sky
     t = 0.5 * (ray.unit_direction.y + 1)
@@ -38,11 +40,11 @@ def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
 
 def trace_rays():
     # Image
-    fname = 'diffuse_material'
+    fname = 'multi_materials'
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
-    antialias_samples = 100
+    antialias_samples = 50
     max_depth = 50
 
     # Camera
@@ -50,8 +52,16 @@ def trace_rays():
 
     # World
     world = HittableList()
-    world.append(Sphere(Point3(0, -100.5, -1), 100))
-    world.append(Sphere(Point3(0, 0, -1), 0.5))  # Main Sphere
+
+    material_ground = Diffuse(Colour(0.8, 0.8, 0.0))
+    material_centre = Diffuse(Colour(0.7, 0.3, 0.3))
+    material_left = Metal(Colour(0.8, 0.8, 0.8), 0.3)
+    material_right = Metal(Colour(0.8, 0.6, 0.2), 1.0)
+
+    world.append(Sphere(Point3(0, -100.5, -1), 100, material_ground)) # Ground
+    world.append(Sphere(Point3(-1, 0, -1), 0.5, material_left)) # Left Sphere
+    world.append(Sphere(Point3(1, 0, -1), 0.5, material_right)) # Right Sphere
+    world.append(Sphere(Point3(0, 0, -1), 0.5, material_centre)) # Centre Sphere
 
     # Render
     output = f"P3\n{image_width} {image_height}\n255\n"
