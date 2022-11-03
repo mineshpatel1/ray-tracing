@@ -41,21 +41,25 @@ def ray_colour(ray: Ray, world: HittableList, depth: int = 10) -> Colour:
 
 def trace_rays():
     # Image
-    fname = 'camera'
+    fname = 'depth_of_field'
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
     antialias_samples = 1
     max_depth = 50
+    look_at = Point3(3, 3, 2)
+    look_from = Point3(0, 0, -1)
+    focus_distance = (look_from - look_at).length
 
     # Camera
-    R = math.cos(math.pi / 4)
     cam = Camera(
-        Point3(-2, 2, 1),
-        Point3(0, 0, -1),
+        look_at,
+        look_from,
         Vector(0, 1, 0),
         20,
         aspect_ratio,
+        1.5,
+        focus_distance,
     )
 
     # World
@@ -66,9 +70,9 @@ def trace_rays():
     material_right = Metal(Colour(0.8, 0.6, 0.2))
 
     world.append(Sphere(Point3(0.0, -100.5, -1.0), 100, material_ground))  # Ground
-    world.append(Sphere(Point3(1, 0, -1), 0.5, material_right)) # Right Sphere
-    world.append(Sphere(Point3(0, 0, -1), 0.5, material_centre)) # Centre Sphere
     world.append(Sphere(Point3(-1, 0, -1), 0.5, material_left)) # Left Sphere
+    world.append(Sphere(Point3(0, 0, -1), 0.5, material_centre)) # Centre Sphere
+    world.append(Sphere(Point3(1, 0, -1), 0.5, material_right)) # Right Sphere
 
     # Render
     output = f"P3\n{image_width} {image_height}\n255\n"

@@ -181,3 +181,11 @@ def random_in_hemisphere(normal: Vector) -> Vector:
     else:
         return in_unit_sphere.negative
 
+
+def random_in_unit_disk() -> Vector:
+    while True:
+        p = Vector(uniform(1, -1), uniform(-1, 1), 0)
+        if p.length_squared >= 1:
+            continue
+        else:
+            return p
