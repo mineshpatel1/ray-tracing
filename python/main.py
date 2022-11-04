@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import os
 import math
 import multiprocessing
-from random import random
+from random import random, uniform
+from typing import Optional
 
 from camera import Camera
 from ray import Ray
@@ -61,40 +60,72 @@ def process_line(
         output += f"{colour.rgb(antialias_samples)}\n"
     return j, output
 
-def trace_rays():
+
+def create_scene(n: int = 8) -> HittableList:
+    world = HittableList()
+    material_ground = Diffuse(Colour(0.5, 0.5, 0.5))
+    world.append(Sphere(Point3(0, -1000, 0), 1000, material_ground))  # Ground
+
+    for a in range(-n, n, 1):
+        for b in range(-n, n, 1):
+            choose_material = random()
+            centre = Point3(a + 0.9 * random(), 0.2, b + 0.9 * random())
+
+            if (centre - Point3(4, 0.2, 0)).length > 0.9:
+                if choose_material < 0.8:
+                    albedo = Colour.random()
+                    material = Diffuse(albedo)
+                elif choose_material < 0.95:
+                    albedo = Colour.uniform(0, 0.5)
+                    fuzz = uniform(0, 0.5)
+                    material = Metal(albedo, fuzz)
+                else:
+                    material = Glass(1.5)
+
+                world.append(Sphere(centre, 0.2, material))
+
+    material_left = Diffuse(Colour(0.1, 0.2, 0.5))
+    world.append(Sphere(Point3(-4, 1, 0), 1, material_left)) # Left Sphere
+    material_centre = Glass(1.5)
+    world.append(Sphere(Point3(0, 1, 0), 1, material_centre)) # Centre Sphere
+    material_right = Metal(Colour(0.7, 0.6, 0.5))
+    world.append(Sphere(Point3(4, 1, 0), 1, material_right)) # Right Sphere
+
+    return world
+
+
+def trace_rays(
+    fname: str,
+    look_from: Point3,
+    look_at: Optional[Point3] = None,
+    v_field_of_view: int = 90,
+    v_up: Optional[Vector] = None,
+    focus_distance: float = None,
+    image_width: int = 400,
+    aspect_ratio: float = 16 / 9,
+    antialias_samples: int = 10,
+    max_depth: int = 50,
+    aperture: float = 0.01,
+):
     # Image
-    fname = 'parallel'
-    aspect_ratio = 16 / 9
-    image_width = 400
+    look_at = look_at or Point3(0, 0, 0)
+    v_up = v_up or Vector(0, 1, 0)
     image_height = int(image_width / aspect_ratio)
-    antialias_samples = 1
-    max_depth = 5
-    look_from = Point3(0, 3, 3)
-    look_at = Point3(0, 0, -1)
-    focus_distance = (look_from - look_at).length
+    focus_distance = focus_distance or (look_from - look_at).length
 
     # Camera
     cam = Camera(
         look_at,
         look_from,
-        Vector(0, 1, 0),
-        90,
+        v_up,
+        v_field_of_view,
         aspect_ratio,
-        0.01,
+        aperture,
         focus_distance,
     )
 
     # World
-    world = HittableList()
-    material_ground = Diffuse(Colour(0.8, 0.8, 0))
-    material_centre = Diffuse(Colour(0.1, 0.2, 0.5))
-    material_left = Glass(1.5)
-    material_right = Metal(Colour(0.8, 0.6, 0.2))
-
-    world.append(Sphere(Point3(0.0, -100.5, -1.0), 100, material_ground))  # Ground
-    world.append(Sphere(Point3(-1, 0, -1), 0.5, material_left)) # Left Sphere
-    world.append(Sphere(Point3(0, 0, -1), 0.5, material_centre)) # Centre Sphere
-    world.append(Sphere(Point3(1, 0, -1), 0.5, material_right)) # Right Sphere
+    world = create_scene(8)
 
     # Render
     output = f"P3\n{image_width} {image_height}\n255\n"
@@ -143,4 +174,11 @@ def trace_rays():
     log.info(f'Written PPM image to {path}.')
 
 if __name__ == '__main__':
-    trace_rays()
+    trace_rays(
+        fname='final',
+        look_from=Point3(13, 2, 3),
+        v_field_of_view=20,
+        image_width=400,
+        antialias_samples=100,
+        max_depth=50,
+    )
