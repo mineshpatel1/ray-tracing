@@ -67,10 +67,10 @@ def trace_rays():
     aspect_ratio = 16 / 9
     image_width = 400
     image_height = int(image_width / aspect_ratio)
-    antialias_samples = 10
-    max_depth = 50
-    look_at = Point3(3, 3, 2)
-    look_from = Point3(0, 0, -1)
+    antialias_samples = 1
+    max_depth = 5
+    look_from = Point3(0, 3, 3)
+    look_at = Point3(0, 0, -1)
     focus_distance = (look_from - look_at).length
 
     # Camera
@@ -78,7 +78,7 @@ def trace_rays():
         look_at,
         look_from,
         Vector(0, 1, 0),
-        20,
+        90,
         aspect_ratio,
         0.01,
         focus_distance,

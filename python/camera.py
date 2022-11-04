@@ -6,8 +6,8 @@ from vector import cross, random_in_unit_disk, Point3, Vector
 class Camera:
     def __init__(
         self,
-        look_from: Point3,
         look_at: Point3,
+        look_from: Point3,
         v_up: Vector,
         v_field_of_view: float,
         aspect_ratio: float,
