@@ -16,7 +16,7 @@ const IMAGE_WIDTH: u32 = 256;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 const IMAGES_DIR: &str = "images";
-const OUTPUT_IMAGE: &str = "background";
+const OUTPUT_IMAGE: &str = "sphere";
 
 fn write_file(path: &String, content: &String) -> std::io::Result<()> {
     let mut file = File::create(path)?;
@@ -24,7 +24,20 @@ fn write_file(path: &String, content: &String) -> std::io::Result<()> {
     return Ok(());
 }
 
+fn hit_sphere(centre: Point, radius: f64, ray: &Ray) -> bool {
+    let oc = ray.origin - centre;
+    let a = ray.direction.dot(ray.direction);
+    let b = oc.dot(ray.direction) * 2.0;
+    let c = oc.dot(oc) - radius.powf(2.0);
+    let discriminant = b.powf(2.0) - (4.0 * a * c);
+    return discriminant > 0.0;
+}
+
 fn ray_colour(ray: &Ray) -> Colour {
+    if hit_sphere(Point::new(0.0, 0.0, -1.0), 0.5, ray) {
+        return Colour::new(0.0, 0.0, 1.0);
+    }
+
     let t = 0.5 * (ray.direction.unit().y() + 1.0);
     return {
         Colour::new(1.0, 1.0, 1.0) * (1.0 - t) +
