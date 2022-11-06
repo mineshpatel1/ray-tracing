@@ -1,6 +1,8 @@
 use std::fmt;
 use std::fmt::Display;
 use std::ops::{Index, IndexMut, Add, Div, Mul, Neg, Sub};
+use crate::colour::Colour;
+
 
 #[derive(Clone, Copy)]
 pub struct Vector {
@@ -10,6 +12,10 @@ pub struct Vector {
 impl Vector {
     pub fn new(x: f64, y: f64, z: f64) -> Vector {
         return Vector {xyz: [x, y, z]};
+    }
+
+    pub fn to_colour(self) -> Colour {
+        return Colour {r: self.x(), g: self.y(), b: self.z()};
     }
 
     pub fn x(self) -> f64 {
