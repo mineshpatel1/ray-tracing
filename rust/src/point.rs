@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fmt::Display;
-use std::ops::{Index, IndexMut, Sub};
+use std::ops::{Add, Index, IndexMut, Sub};
 use crate::vector::Vector;
 
 #[derive(Clone, Copy)]
@@ -43,6 +43,28 @@ impl Sub for Point {
     type Output = Vector;
     fn sub(self, rhs: Point) -> Self::Output {
         return self.v - rhs.v;
+    }
+}
+
+impl Sub<Vector> for Point {
+    type Output = Vector;
+    fn sub(self, rhs: Vector) -> Self::Output {
+        return self.v - rhs;
+    }
+}
+
+impl Sub<Point> for Vector {
+    type Output = Vector;
+    fn sub(self, rhs: Point) -> Self::Output {
+        return self - rhs.v;
+    }
+}
+
+impl Add<Vector> for Point {
+    type Output = Point;
+    fn add(self, rhs: Vector) -> Self::Output {
+        let v = self.v + rhs;
+        return Point { v };
     }
 }
 

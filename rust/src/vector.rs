@@ -12,16 +12,36 @@ impl Vector {
         return Vector {xyz: [x, y, z]};
     }
 
-    pub fn x(&self) -> f64 {
+    pub fn x(self) -> f64 {
         return self.xyz[0];
     }
 
-    pub fn y(&self) -> f64 {
+    pub fn y(self) -> f64 {
         return self.xyz[1];
     }
 
-    pub fn z(&self) -> f64 {
+    pub fn z(self) -> f64 {
         return self.xyz[2];
+    }
+
+    pub fn dot(self, u: Vector) -> f64 {
+        return (self[0] * u[0]) + (self[1] * u[1]) + (self[2] * u[2]);
+    }
+
+    pub fn cross(self, u: Vector) -> Vector {
+        return Vector::new(
+            (self[1] * u[2]) - (self[2] * u[1]),
+            (self[2] * u[0]) - (self[0] * u[2]),
+            (self[0] * u[1]) - (self[1] * u[0]),
+        );
+    }
+
+    pub fn length(self) -> f64 {
+        return self.dot(self).powf(0.5);
+    }
+
+    pub fn unit(self) -> Vector {
+        return self / self.length();
     }
 }
 
@@ -140,4 +160,11 @@ fn test_vectors() {
     assert_eq!((-vec1[0], -vec1[1], -vec1[2]), (-1.0, -2.0, -3.0));
     let vec3 = vec1 / 2.0;
     assert_eq!((vec3[0], vec3[1], vec3[2]), (0.5, 1.0, 1.5));
+
+    let x = Vector::new(2.0, 1.0, 5.0);
+    let y = Vector::new(4.0, 1.0, 1.0);
+    assert_eq!(x.dot(y), 14.0);
+
+    let vec = x.cross(y);
+    assert_eq!((vec[0], vec[1], vec[2]), (-4.0, 18.0, -2.0));
 }

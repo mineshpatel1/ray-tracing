@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::Display;
+use std::ops::{Add, Mul};
 
 #[derive(Clone, Copy)]
 pub struct Colour {
@@ -18,6 +19,28 @@ impl Colour {
         let ig = (255.999 * self.g) as u32;
         let ib = (255.999 * self.b) as u32;
         return format!("{} {} {}", ir, ig, ib);
+    }
+}
+
+impl Add for Colour {
+    type Output = Colour;
+    fn add(self, other: Self) -> Self::Output {
+        return Colour::new(
+            self.r + other.r,
+            self.g + other.g,
+            self.b + other.b,
+        );
+    }
+}
+
+impl Mul<f64> for Colour {
+    type Output = Colour;
+    fn mul(self, val: f64) -> Self::Output {
+        return Colour::new(
+            self.r * val,
+            self.g * val,
+            self.b * val,
+        );
     }
 }
 
