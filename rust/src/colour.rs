@@ -53,6 +53,17 @@ impl Mul<f64> for Colour {
     }
 }
 
+impl Mul<Colour> for Colour {
+    type Output = Colour;
+    fn mul(self, val: Colour) -> Self::Output {
+        return Colour::new(
+            self.r * val.r,
+            self.g * val.g,
+            self.b * val.b,
+        );
+    }
+}
+
 impl Display for Colour {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         return write!(f, "(r: {}, g: {}, b: {})", self.r, self.g, self.b);

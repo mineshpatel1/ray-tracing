@@ -61,6 +61,11 @@ impl Vector {
     pub fn unit(self) -> Vector {
         return self / self.length();
     }
+
+    pub fn near_zero(self) -> bool {
+        let s = 1e-8;
+        return self[0].abs() < s && self[1].abs() < s && self[2].abs() < s;
+    }
 }
 
 impl Index<usize> for Vector {
@@ -170,6 +175,11 @@ pub fn random_in_unit_sphere() -> Vector {
     }
 }
 
+pub fn reflect(v: Vector, n: Vector) -> Vector {
+    return v - (v.dot(n) * n * 2.0);
+}
+
+
 #[test]
 fn test_vectors() {
     let vec1 = Vector { xyz: [1.0, 2.0, 3.0] };
@@ -193,4 +203,7 @@ fn test_vectors() {
 
     let vec = x.cross(y);
     assert_eq!((vec[0], vec[1], vec[2]), (-4.0, 18.0, -2.0));
+
+    let vec = reflect(x, y);
+    assert_eq!((vec[0], vec[1], vec[2]), (-110.0, -27.0, -23.0));
 }

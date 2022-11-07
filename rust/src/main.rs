@@ -1,9 +1,11 @@
-mod vector;
-mod point;
-mod colour;
-mod ray;
-mod hittable;
 mod camera;
+mod colour;
+mod hittable;
+mod material;
+mod point;
+mod ray;
+mod sphere;
+mod vector;
 
 use std::time::Instant;
 use std::fs::File;
@@ -12,19 +14,20 @@ use indicatif::ProgressBar;
 use rand::Rng;
 use rayon::prelude::*;
 
-use vector::random_in_unit_sphere;
 use point::Point;
 use colour::Colour;
 use ray::Ray;
-use hittable::{Environment, Sphere, Hit};
+use hittable::{Environment, Hit};
 use camera::Camera;
+use material::{Diffuse, Metal};
+use sphere::Sphere;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 400;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 const IMAGES_DIR: &str = "images";
-const OUTPUT_IMAGE: &str = "diffuse";
+const OUTPUT_IMAGE: &str = "metal";
 const ANTIALIAS_SAMPLES: i64 = 100;
 const MAX_DEPTH: i32 = 50;
 
@@ -38,8 +41,11 @@ fn ray_colour(ray: &Ray, world: &Environment, depth: i32) -> Colour {
     if depth <= 0 { return Colour::new(0.0, 0.0, 0.0); }
 
     if let Some(rec) = world.hit(ray, 0.001, f64::INFINITY) {
-        let target = rec.p + rec.normal + random_in_unit_sphere().unit();
-        return ray_colour(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
+        if let Some((scattered, colour)) = rec.material.scatter(ray, &rec) {
+            return colour * ray_colour(&scattered, world, depth - 1);
+        } else {
+            return Colour::new(0.0, 0.0, 0.0);
+        }
     } else {
         let t = 0.5 * (ray.direction.unit().y() + 1.0);
         return {
@@ -63,8 +69,15 @@ fn main() {
 
     // World
     let mut world = Environment{ hittables: Vec::new() };
-    world.add(Box::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+    let ground_mat = Diffuse::new(Colour::new(0.8, 0.8, 0.0));
+    let centre_mat = Diffuse::new(Colour::new(0.7, 0.3, 0.3));
+    let left_mat = Metal::new(Colour::new(0.8, 0.8, 0.8), 0.2);
+    let right_mat = Metal::new(Colour::new(0.8, 0.6, 0.2), 1.0);
+
+    world.add(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0, ground_mat));
+    world.add(Sphere::new(Point::new(-1.0, 0.0, -1.0), 0.5, left_mat));
+    world.add(Sphere::new(Point::new(1.0, 0.0, -1.0), 0.5, right_mat));
+    world.add(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5, centre_mat));
 
     // File
     let fpath = format!("{}/{}.ppm", IMAGES_DIR, OUTPUT_IMAGE);
