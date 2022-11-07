@@ -13,6 +13,10 @@ impl Point {
         return Point { v: Vector{ xyz: [x, y, z]} };
     }
 
+    pub fn from(vec: Vector) -> Point {
+        return Point { v: vec };
+    }
+
     pub fn x(&self) -> f64 {
         return self.v[0];
     }
@@ -47,9 +51,9 @@ impl Sub for Point {
 }
 
 impl Sub<Vector> for Point {
-    type Output = Vector;
+    type Output = Point;
     fn sub(self, rhs: Vector) -> Self::Output {
-        return self.v - rhs;
+        return Point::from(self.v - rhs);
     }
 }
 
@@ -63,8 +67,7 @@ impl Sub<Point> for Vector {
 impl Add<Vector> for Point {
     type Output = Point;
     fn add(self, rhs: Vector) -> Self::Output {
-        let v = self.v + rhs;
-        return Point { v };
+        return Point::from(self.v + rhs);
     }
 }
 

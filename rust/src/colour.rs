@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fmt::Display;
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul};
 
 #[derive(Clone, Copy)]
 pub struct Colour {
@@ -14,10 +14,10 @@ impl Colour {
         return Colour{r, g, b};
     }
 
-    pub fn to_str(self) -> String {
-        let ir = (255.999 * self.r) as u32;
-        let ig = (255.999 * self.g) as u32;
-        let ib = (255.999 * self.b) as u32;
+    pub fn sample_colour(self, samples: i64) -> String {
+        let ir = (256.0 * (self.r / (samples as f64)).clamp(0.0, 0.999)) as u64;
+        let ig = (256.0 * (self.g / (samples as f64)).clamp(0.0, 0.999)) as u64;
+        let ib = (256.0 * (self.b / (samples as f64)).clamp(0.0, 0.999)) as u64;
         return format!("{} {} {}", ir, ig, ib);
     }
 }
@@ -30,6 +30,14 @@ impl Add for Colour {
             self.g + other.g,
             self.b + other.b,
         );
+    }
+}
+
+impl AddAssign for Colour {
+    fn add_assign(&mut self, rhs: Self) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
     }
 }
 
@@ -53,5 +61,5 @@ impl Display for Colour {
 #[test]
 fn test_colours() {
     let c1 = Colour{r: 0.8, g: 0.2, b: 0.3};
-    assert_eq!(c1.to_str(), String::from("204 51 76"));
+    assert_eq!(c1.sample_colour(1), String::from("204 51 76"));
 }
