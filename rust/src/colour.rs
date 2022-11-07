@@ -14,10 +14,11 @@ impl Colour {
         return Colour{r, g, b};
     }
 
-    pub fn sample_colour(self, samples: i64) -> String {
-        let ir = (256.0 * (self.r / (samples as f64)).clamp(0.0, 0.999)) as u64;
-        let ig = (256.0 * (self.g / (samples as f64)).clamp(0.0, 0.999)) as u64;
-        let ib = (256.0 * (self.b / (samples as f64)).clamp(0.0, 0.999)) as u64;
+    pub fn render(self, samples: i64) -> String {
+        // Formats the colour and adds a correction of Gamma = 2 
+        let ir = (256.0 * (self.r / (samples as f64)).powf(0.5).clamp(0.0, 0.999)) as u64;
+        let ig = (256.0 * (self.g / (samples as f64)).powf(0.5).clamp(0.0, 0.999)) as u64;
+        let ib = (256.0 * (self.b / (samples as f64)).powf(0.5).clamp(0.0, 0.999)) as u64;
         return format!("{} {} {}", ir, ig, ib);
     }
 }
@@ -61,5 +62,5 @@ impl Display for Colour {
 #[test]
 fn test_colours() {
     let c1 = Colour{r: 0.8, g: 0.2, b: 0.3};
-    assert_eq!(c1.sample_colour(1), String::from("204 51 76"));
+    assert_eq!(c1.render(1), String::from("228 114 140"));
 }

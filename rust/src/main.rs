@@ -12,6 +12,7 @@ use indicatif::ProgressBar;
 use rand::Rng;
 use rayon::prelude::*;
 
+use vector::random_in_unit_sphere;
 use point::Point;
 use colour::Colour;
 use ray::Ray;
@@ -19,12 +20,13 @@ use hittable::{Environment, Sphere, Hit};
 use camera::Camera;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 256;
+const IMAGE_WIDTH: u32 = 400;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 const IMAGES_DIR: &str = "images";
-const OUTPUT_IMAGE: &str = "antialias";
+const OUTPUT_IMAGE: &str = "diffuse";
 const ANTIALIAS_SAMPLES: i64 = 100;
+const MAX_DEPTH: i32 = 50;
 
 fn write_file(path: &String, content: &String) -> std::io::Result<()> {
     let mut file = File::create(path)?;
@@ -32,9 +34,12 @@ fn write_file(path: &String, content: &String) -> std::io::Result<()> {
     return Ok(());
 }
 
-fn ray_colour(ray: &Ray, world: &Environment) -> Colour {
-    if let Some(rec) = world.hit(ray, 0.0, f64::INFINITY) {
-        return (Colour::new(1.0, 1.0, 1.0) + rec.normal.to_colour()) * 0.5;
+fn ray_colour(ray: &Ray, world: &Environment, depth: i32) -> Colour {
+    if depth <= 0 { return Colour::new(0.0, 0.0, 0.0); }
+
+    if let Some(rec) = world.hit(ray, 0.001, f64::INFINITY) {
+        let target = rec.p + rec.normal + random_in_unit_sphere().unit();
+        return ray_colour(&Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
     } else {
         let t = 0.5 * (ray.direction.unit().y() + 1.0);
         return {
@@ -80,14 +85,14 @@ fn main() {
                     let u = ((i as f64) + u_r) / ((IMAGE_WIDTH - 1) as f64);
                     let v = ((j as f64) + v_r) / ((image_height - 1) as f64);
                     let ray = cam.get_ray(u, v);
-                    pixel += ray_colour(&ray, &world);
+                    pixel += ray_colour(&ray, &world, MAX_DEPTH);
                 }
                 return pixel;
             })
             .collect();
 
         for pixel in pixels.into_iter() {
-            out.push_str(&format!("{}\n", pixel.sample_colour(ANTIALIAS_SAMPLES))[..]);
+            out.push_str(&format!("{}\n", pixel.render(ANTIALIAS_SAMPLES))[..]);
         }
         bar.inc(1);
     }

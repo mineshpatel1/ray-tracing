@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::Display;
-use std::ops::{Index, IndexMut, Add, Div, Mul, Neg, Sub};
+use std::ops::{Index, IndexMut, Add, Div, Mul, Neg, Sub, Range};
+use rand::Rng;
 use crate::colour::Colour;
 
 
@@ -12,6 +13,17 @@ pub struct Vector {
 impl Vector {
     pub fn new(x: f64, y: f64, z: f64) -> Vector {
         return Vector {xyz: [x, y, z]};
+    }
+
+    pub fn random(range: Range<f64>) -> Vector {
+        let mut rng = rand::thread_rng();
+        return Vector {
+            xyz: [
+                rng.gen_range(range.clone()),
+                rng.gen_range(range.clone()),
+                rng.gen_range(range.clone()),
+            ],
+        }
     }
 
     pub fn to_colour(self) -> Colour {
@@ -149,6 +161,14 @@ impl Display for Vector {
     }
 }
 
+pub fn random_in_unit_sphere() -> Vector {
+    loop {
+        let v = Vector::random(-1.0..1.0);
+        if v.length() < 1.0 {
+            return v;
+        }
+    }
+}
 
 #[test]
 fn test_vectors() {
