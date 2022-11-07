@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use indicatif::ProgressBar;
 use rand::Rng;
+use rayon::prelude::*;
 
 use point::Point;
 use colour::Colour;
@@ -66,18 +67,26 @@ fn main() {
     let bar = ProgressBar::new(image_height as u64);
 
     let start = Instant::now();
-    let mut rng = rand::thread_rng();
+    
+
     for j in (0..image_height).rev() {
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel = Colour::new(0.0, 0.0, 0.0);
-            for _ in 0..ANTIALIAS_SAMPLES {
-                let u_r: f64 = rng.gen();
-                let v_r: f64 = rng.gen();
-                let u = ((i as f64) + u_r) / ((IMAGE_WIDTH - 1) as f64);
-                let v = ((j as f64) + v_r) / ((image_height - 1) as f64);
-                let ray = cam.get_ray(u, v);
-                pixel += ray_colour(&ray, &world);
-            }
+        let pixels: Vec<Colour> = (0..IMAGE_WIDTH).into_par_iter()
+            .map(|i| {
+                let mut rng = rand::thread_rng();
+                let mut pixel = Colour::new(0.0, 0.0, 0.0);
+                for _ in 0..ANTIALIAS_SAMPLES {
+                    let u_r: f64 = rng.gen();
+                    let v_r: f64 = rng.gen();
+                    let u = ((i as f64) + u_r) / ((IMAGE_WIDTH - 1) as f64);
+                    let v = ((j as f64) + v_r) / ((image_height - 1) as f64);
+                    let ray = cam.get_ray(u, v);
+                    pixel += ray_colour(&ray, &world);
+                }
+                return pixel;
+            })
+            .collect();
+
+        for pixel in pixels.into_iter() {
             out.push_str(&format!("{}\n", pixel.sample_colour(ANTIALIAS_SAMPLES))[..]);
         }
         bar.inc(1);
