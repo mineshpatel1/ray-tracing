@@ -1,13 +1,13 @@
-use std::sync::Arc;
 use rand::Rng;
+use std::sync::Arc;
 
 use crate::colour::Colour;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use crate::vector::{random_in_unit_sphere};
+use crate::vector::random_in_unit_sphere;
 
 pub trait Material: Send + Sync {
-    fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)>;
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)>;
 }
 
 pub struct Diffuse {
@@ -16,12 +16,12 @@ pub struct Diffuse {
 
 impl Diffuse {
     pub fn new(colour: Colour) -> Arc<Diffuse> {
-        return Arc::new(Diffuse{ colour });
+        return Arc::new(Diffuse { colour });
     }
 }
 
 impl Material for Diffuse {
-    fn scatter (&self, _ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
+    fn scatter(&self, _ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
         let mut scatter_direction = record.normal + random_in_unit_sphere().unit();
 
         // Catch degenerate scatter direction
@@ -41,12 +41,12 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(colour: Colour, fuzz: f64) -> Arc<Metal> {
-        return Arc::new(Metal{ colour, fuzz });
+        return Arc::new(Metal { colour, fuzz });
     }
 }
 
 impl Material for Metal {
-    fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
         let reflected = ray.direction.reflect(record.normal);
         let scattered = Ray::new(record.p, reflected + (random_in_unit_sphere() * self.fuzz));
 
@@ -64,7 +64,7 @@ pub struct Glass {
 
 impl Glass {
     pub fn new(refractive_idx: f64) -> Arc<Glass> {
-        return Arc::new(Glass{ refractive_idx });
+        return Arc::new(Glass { refractive_idx });
     }
 
     fn reflectance(cosine: f64, refractive_idx: f64) -> f64 {
@@ -74,22 +74,28 @@ impl Glass {
 }
 
 impl Material for Glass {
-    fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
         let unit_direction = ray.direction.unit();
 
         let cos_theta = (-unit_direction).dot(record.normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).powf(0.5);
-        let refractive_idx =  if record.front_face { 1.0 / self.refractive_idx } else {self.refractive_idx};
+        let refractive_idx = if record.front_face {
+            1.0 / self.refractive_idx
+        } else {
+            self.refractive_idx
+        };
 
         let cannot_refract = refractive_idx * sin_theta > 1.0;
         let will_reflect = Self::reflectance(cos_theta, refractive_idx) > rand::thread_rng().gen();
 
-        let direction = if cannot_refract || will_reflect  {  // Reflect
+        let direction = if cannot_refract || will_reflect {
+            // Reflect
             unit_direction.reflect(record.normal)
-        } else { // Refract
+        } else {
+            // Refract
             unit_direction.refract(record.normal, refractive_idx)
         };
-        
-        return Some((Ray::new(record.p, direction),  Colour::new(1.0, 1.0, 1.0)));
+
+        return Some((Ray::new(record.p, direction), Colour::new(1.0, 1.0, 1.0)));
     }
 }

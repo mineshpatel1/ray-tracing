@@ -1,8 +1,7 @@
-use crate::vector::{Vector, random_in_unit_disk};
 use crate::point::Point;
 use crate::ray::Ray;
 use crate::utils::deg_to_rad;
-
+use crate::vector::{random_in_unit_disk, Vector};
 
 pub struct Camera {
     look_from: Point,
@@ -34,7 +33,8 @@ impl Camera {
 
         let horizontal = focus_distance * viewport_width * u;
         let vertical = focus_distance * viewport_height * v;
-        let lower_left_corner = look_from - (horizontal / 2.0) - (vertical / 2.0) - (focus_distance * w);
+        let lower_left_corner =
+            look_from - (horizontal / 2.0) - (vertical / 2.0) - (focus_distance * w);
 
         return Camera {
             look_from,
@@ -44,7 +44,7 @@ impl Camera {
             aperture,
             u,
             v,
-        }
+        };
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
@@ -53,7 +53,9 @@ impl Camera {
 
         return Ray::new(
             self.look_from + offset,
-            self.lower_left_corner + (self.horizontal * s) + (self.vertical * t) - self.look_from - offset,
+            self.lower_left_corner + (self.horizontal * s) + (self.vertical * t)
+                - self.look_from
+                - offset,
         );
     }
 }

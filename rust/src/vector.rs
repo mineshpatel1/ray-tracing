@@ -1,18 +1,17 @@
+use crate::colour::Colour;
+use rand::Rng;
 use std::fmt;
 use std::fmt::Display;
-use std::ops::{Index, IndexMut, Add, Div, Mul, Neg, Sub, Range};
-use rand::Rng;
-use crate::colour::Colour;
-
+use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
 
 #[derive(Clone, Copy)]
 pub struct Vector {
-    pub xyz: [f64; 3]
+    pub xyz: [f64; 3],
 }
 
 impl Vector {
     pub fn new(x: f64, y: f64, z: f64) -> Vector {
-        return Vector {xyz: [x, y, z]};
+        return Vector { xyz: [x, y, z] };
     }
 
     pub fn random(range: Range<f64>) -> Vector {
@@ -23,11 +22,15 @@ impl Vector {
                 rng.gen_range(range.clone()),
                 rng.gen_range(range.clone()),
             ],
-        }
+        };
     }
 
     pub fn to_colour(self) -> Colour {
-        return Colour {r: self.x(), g: self.y(), b: self.z()};
+        return Colour {
+            r: self.x(),
+            g: self.y(),
+            b: self.z(),
+        };
     }
 
     pub fn x(self) -> f64 {
@@ -97,12 +100,8 @@ impl Add for Vector {
     type Output = Vector;
     fn add(self, rhs: Self) -> Self::Output {
         return Vector {
-            xyz: [
-                self[0] + rhs[0],
-                self[1] + rhs[1],
-                self[2] + rhs[2],
-            ]
-        }
+            xyz: [self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2]],
+        };
     }
 }
 
@@ -110,12 +109,8 @@ impl Sub for Vector {
     type Output = Vector;
     fn sub(self, rhs: Self) -> Self::Output {
         return Vector {
-            xyz: [
-                self[0] - rhs[0],
-                self[1] - rhs[1],
-                self[2] - rhs[2],
-            ]
-        }
+            xyz: [self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2]],
+        };
     }
 }
 
@@ -123,12 +118,8 @@ impl Mul<Vector> for Vector {
     type Output = Vector;
     fn mul(self, rhs: Self) -> Self::Output {
         return Vector {
-            xyz: [
-                self[0] * rhs[0],
-                self[1] * rhs[1],
-                self[2] * rhs[2],
-            ]
-        }
+            xyz: [self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2]],
+        };
     }
 }
 
@@ -136,12 +127,8 @@ impl Mul<f64> for Vector {
     type Output = Vector;
     fn mul(self, rhs: f64) -> Self::Output {
         return Vector {
-            xyz: [
-                self[0] * rhs,
-                self[1] * rhs,
-                self[2] * rhs,
-            ]
-        }
+            xyz: [self[0] * rhs, self[1] * rhs, self[2] * rhs],
+        };
     }
 }
 
@@ -156,12 +143,8 @@ impl Div<f64> for Vector {
     type Output = Vector;
     fn div(self, rhs: f64) -> Self::Output {
         return Vector {
-            xyz: [
-                self[0] / rhs,
-                self[1] / rhs,
-                self[2] / rhs,
-            ]
-        }
+            xyz: [self[0] / rhs, self[1] / rhs, self[2] / rhs],
+        };
     }
 }
 
@@ -197,10 +180,11 @@ pub fn random_in_unit_disk() -> Vector {
     }
 }
 
-
 #[test]
 fn test_vectors() {
-    let vec1 = Vector { xyz: [1.0, 2.0, 3.0] };
+    let vec1 = Vector {
+        xyz: [1.0, 2.0, 3.0],
+    };
     let vec2 = Vector::new(4.0, 8.0, 12.0);
     assert_eq!((vec1[0], vec1[1], vec1[2]), (1.0, 2.0, 3.0));
     assert_eq!((vec1.x(), vec1.y(), vec1.z()), (1.0, 2.0, 3.0));
@@ -226,5 +210,8 @@ fn test_vectors() {
     assert_eq!((vec[0], vec[1], vec[2]), (-110.0, -27.0, -23.0));
 
     let vec = x.refract(y, 1.2);
-    assert_eq!((vec[0], vec[1], vec[2]), (-334.8530318289354, -83.11325795723384, -78.31325795723384))
+    assert_eq!(
+        (vec[0], vec[1], vec[2]),
+        (-334.8530318289354, -83.11325795723384, -78.31325795723384)
+    )
 }

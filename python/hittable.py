@@ -38,10 +38,12 @@ class HittableList:
 
     def hit(self, ray: Ray, t_min: float, t_max: float) -> Optional[HitRecord]:
         record = None
+        closest_so_far = t_max
         for hittable in self.hittables:
-            temp_record = hittable.hit(ray, t_min, t_max)
+            temp_record = hittable.hit(ray, t_min, closest_so_far)
             if temp_record:
                 record = temp_record
+                closest_so_far = temp_record.t
         return record
 
 

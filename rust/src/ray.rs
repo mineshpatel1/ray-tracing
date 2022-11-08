@@ -1,5 +1,5 @@
-use crate::vector::Vector;
 use crate::point::Point;
+use crate::vector::Vector;
 
 pub struct Ray {
     pub origin: Point,
@@ -8,7 +8,7 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Point, direction: Vector) -> Ray {
-        return Ray {origin, direction};
+        return Ray { origin, direction };
     }
 
     pub fn at(&self, t: f64) -> Point {

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::vector::Vector;
+use crate::material::Material;
 use crate::point::Point;
 use crate::ray::Ray;
-use crate::material::Material;
+use crate::vector::Vector;
 
 pub struct HitRecord {
     pub p: Point,
@@ -21,23 +21,29 @@ impl HitRecord {
         ray: &Ray,
         material: Arc<dyn Material>,
     ) -> HitRecord {
-        let mut rec = HitRecord {p, normal, t, material, front_face: false};
+        let mut rec = HitRecord {
+            p,
+            normal,
+            t,
+            material,
+            front_face: false,
+        };
         rec.set_face_normal(ray, normal);
         return rec;
     }
 
     fn set_face_normal(&mut self, ray: &Ray, normal: Vector) {
         self.front_face = ray.direction.dot(normal) < 0.0;
-        self.normal = if self.front_face {normal} else {-normal};
+        self.normal = if self.front_face { normal } else { -normal };
     }
 }
 
 pub trait Hit: Send + Sync {
-    fn hit (&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 pub struct Environment {
-    pub hittables:Vec<Box<dyn Hit>>,
+    pub hittables: Vec<Box<dyn Hit>>,
 }
 
 impl Environment {
@@ -47,10 +53,12 @@ impl Environment {
 }
 
 impl Hit for Environment {
-    fn hit (&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut out: Option<HitRecord> = None;
+        let mut closest_so_far = t_max;
         for hittable in self.hittables.iter() {
-            if let Some(temp_record) = hittable.hit(ray, t_min, t_max) {
+            if let Some(temp_record) = hittable.hit(ray, t_min, closest_so_far) {
+                closest_so_far = temp_record.t;
                 out = Some(temp_record);
             }
         }

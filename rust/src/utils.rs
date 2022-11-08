@@ -1,6 +1,6 @@
+use std::f64::consts::PI;
 use std::fs::File;
 use std::io::prelude::*;
-use std::f64::consts::PI;
 
 pub fn write_file(path: &String, content: &String) -> std::io::Result<()> {
     let mut file = File::create(path)?;

@@ -4,7 +4,6 @@ use std::ops::{Add, Index, IndexMut, Sub};
 
 use crate::vector::Vector;
 
-
 #[derive(Clone, Copy)]
 pub struct Point {
     pub v: Vector,
@@ -12,7 +11,9 @@ pub struct Point {
 
 impl Point {
     pub fn new(x: f64, y: f64, z: f64) -> Point {
-        return Point { v: Vector{ xyz: [x, y, z]} };
+        return Point {
+            v: Vector { xyz: [x, y, z] },
+        };
     }
 
     pub fn from(vec: Vector) -> Point {

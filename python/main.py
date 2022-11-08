@@ -175,10 +175,10 @@ def trace_rays(
 
 if __name__ == '__main__':
     trace_rays(
-        fname='final',
+        fname='benchmark',
         look_from=Point3(13, 2, 3),
         v_field_of_view=20,
         image_width=400,
-        antialias_samples=100,
-        max_depth=50,
+        antialias_samples=1,
+        max_depth=10,
     )
