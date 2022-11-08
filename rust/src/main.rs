@@ -71,7 +71,7 @@ fn main() {
     let ground_mat = Diffuse::new(Colour::new(0.8, 0.8, 0.0));
     let centre_mat = Diffuse::new(Colour::new(0.7, 0.3, 0.3));
     // let left_mat = Metal::new(Colour::new(0.8, 0.8, 0.8), 0.2);
-    let left_mat = Glass::new(1.2);
+    let left_mat = Glass::new(1.5);
     let right_mat = Metal::new(Colour::new(0.8, 0.6, 0.2), 0.3);
 
     world.add(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0, ground_mat));

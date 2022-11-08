@@ -67,20 +67,17 @@ impl Glass {
         return Arc::new(Glass{ refractive_idx });
     }
 
-    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
-        // let r0 = ((1.0 - refractive_idx) / (1.0 + refractive_idx)).powi(2);
-        // return r0 + (1.0 - r0) * (1.0 - cosine).powi(3);
-        let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
-        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    fn reflectance(cosine: f64, refractive_idx: f64) -> f64 {
+        let r0 = ((1.0 - refractive_idx) / (1.0 + refractive_idx)).powi(2);
+        return r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
     }
 }
 
 impl Material for Glass {
     fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
-        let attenuation = Colour::new(1.0, 1.0, 1.0);
         let unit_direction = ray.direction.unit();
 
-        let cos_theta = (-unit_direction).dot(record.normal).min(-1.0);
+        let cos_theta = (-unit_direction).dot(record.normal).min(1.0);
         let sin_theta = (1.0 - cos_theta.powi(2)).powf(0.5);
         let refractive_idx =  if record.front_face { 1.0 / self.refractive_idx } else {self.refractive_idx};
 
@@ -93,6 +90,6 @@ impl Material for Glass {
             unit_direction.refract(record.normal, refractive_idx)
         };
         
-        return Some((Ray::new(record.p, direction), attenuation));
+        return Some((Ray::new(record.p, direction),  Colour::new(1.0, 1.0, 1.0)));
     }
 }
