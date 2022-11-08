@@ -26,17 +26,16 @@ use crate::vector::Vector;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 400;
-// const VIEWPORT_HEIGHT: f64 = 2.0;
-const FOCAL_LENGTH: f64 = 1.0;
+
 const IMAGES_DIR: &str = "images";
-const OUTPUT_IMAGE: &str = "camera";
+const OUTPUT_IMAGE: &str = "focus";
 const ANTIALIAS_SAMPLES: i64 = 25;
 const MAX_DEPTH: i32 = 50;
-const VFOV: i32 = 20;
-const LOOK_FROM: Point = Point {v: Vector {xyz: [-2.0, 2.0, 1.0]}};
+const V_FOV: i32 = 20;
+const LOOK_FROM: Point = Point {v: Vector {xyz: [3.0, 3.0, 2.0]}};
 const LOOK_AT: Point = Point{v: Vector {xyz: [0.0, 0.0, -1.0]}};
-const VUP: Vector = Vector{xyz: [0.0, 1.0, 0.0]};
-
+const V_UP: Vector = Vector{xyz: [0.0, 1.0, 0.0]};
+const APERTURE: f64 = 2.0;
 
 
 fn ray_colour(ray: &Ray, world: &Environment, depth: i32) -> Colour {
@@ -64,24 +63,23 @@ fn main() {
     let cam = Camera::new(
         LOOK_FROM, 
         LOOK_AT, 
-        VUP, 
+        V_UP, 
         ASPECT_RATIO,
-        FOCAL_LENGTH,
-        VFOV,
+        V_FOV,
+        APERTURE,
     );
 
     // World
     let mut world = Environment{ hittables: Vec::new() };
     let ground_mat = Diffuse::new(Colour::new(0.8, 0.8, 0.0));
     let centre_mat = Diffuse::new(Colour::new(0.7, 0.3, 0.3));
-    // let left_mat = Metal::new(Colour::new(0.8, 0.8, 0.8), 0.2);
     let left_mat = Glass::new(1.5);
     let right_mat = Metal::new(Colour::new(0.8, 0.6, 0.2), 0.3);
 
     world.add(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0, ground_mat));
     world.add(Sphere::new(Point::new(-1.0, 0.0, -1.0), 0.5, left_mat));
-    world.add(Sphere::new(Point::new(1.0, 0.0, -1.0), 0.5, right_mat));
     world.add(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5, centre_mat));
+    world.add(Sphere::new(Point::new(1.0, 0.0, -1.0), 0.5, right_mat));
 
     // File
     println!("\nRendering...");

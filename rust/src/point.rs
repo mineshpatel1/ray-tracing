@@ -1,7 +1,9 @@
 use std::fmt;
 use std::fmt::Display;
 use std::ops::{Add, Index, IndexMut, Sub};
+
 use crate::vector::Vector;
+
 
 #[derive(Clone, Copy)]
 pub struct Point {
@@ -27,6 +29,10 @@ impl Point {
 
     pub fn z(&self) -> f64 {
         return self.v[2];
+    }
+
+    pub fn length(&self) -> f64 {
+        return self.v.length();
     }
 }
 

@@ -187,6 +187,16 @@ pub fn random_in_unit_sphere() -> Vector {
     }
 }
 
+pub fn random_in_unit_disk() -> Vector {
+    let mut rng = rand::thread_rng();
+    loop {
+        let p = Vector::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        if p.dot(p) < 1.0 {
+            return p;
+        }
+    }
+}
+
 
 #[test]
 fn test_vectors() {
