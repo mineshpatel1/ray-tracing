@@ -21,6 +21,10 @@ impl Colour {
         let ib = (256.0 * (self.b / (samples as f64)).powf(0.5).clamp(0.0, 0.999)) as u64;
         return format!("{} {} {}", ir, ig, ib);
     }
+
+    pub fn interpolate(self, end: Colour, t: f64) -> Colour {
+        return self * (1.0 - t) + (end * t);
+    }
 }
 
 impl Add for Colour {

@@ -66,6 +66,18 @@ impl Vector {
         let s = 1e-8;
         return self[0].abs() < s && self[1].abs() < s && self[2].abs() < s;
     }
+
+    pub fn reflect(self, v: Vector) -> Vector {
+        return self - (self.dot(v) * v * 2.0);
+    }
+
+    // (-23.490282122342506, -5.272570530585627, -0.47257053058562715)
+    pub fn refract(self, v: Vector, eta_ratio: f64) -> Vector {
+        let cos_theta = (-self).dot(v).min(1.0);
+        let perp = (self + v * cos_theta) * eta_ratio;
+        let parallel = -(1.0 - perp.dot(perp)).abs().powf(0.5) * v;
+        return perp + parallel;
+    }
 }
 
 impl Index<usize> for Vector {
@@ -175,10 +187,6 @@ pub fn random_in_unit_sphere() -> Vector {
     }
 }
 
-pub fn reflect(v: Vector, n: Vector) -> Vector {
-    return v - (v.dot(n) * n * 2.0);
-}
-
 
 #[test]
 fn test_vectors() {
@@ -204,6 +212,9 @@ fn test_vectors() {
     let vec = x.cross(y);
     assert_eq!((vec[0], vec[1], vec[2]), (-4.0, 18.0, -2.0));
 
-    let vec = reflect(x, y);
+    let vec = x.reflect(y);
     assert_eq!((vec[0], vec[1], vec[2]), (-110.0, -27.0, -23.0));
+
+    let vec = x.refract(y, 1.2);
+    assert_eq!((vec[0], vec[1], vec[2]), (-334.8530318289354, -83.11325795723384, -78.31325795723384))
 }

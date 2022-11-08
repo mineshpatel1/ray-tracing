@@ -1,9 +1,10 @@
 use std::sync::Arc;
+use rand::Rng;
 
 use crate::colour::Colour;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use crate::vector::{random_in_unit_sphere, reflect};
+use crate::vector::{random_in_unit_sphere};
 
 pub trait Material: Send + Sync {
     fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)>;
@@ -46,7 +47,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
-        let reflected = reflect(ray.direction, record.normal);
+        let reflected = ray.direction.reflect(record.normal);
         let scattered = Ray::new(record.p, reflected + (random_in_unit_sphere() * self.fuzz));
 
         if reflected.dot(record.normal) > 0.0 {
@@ -54,5 +55,44 @@ impl Material for Metal {
         } else {
             return None;
         }
+    }
+}
+
+pub struct Glass {
+    pub refractive_idx: f64,
+}
+
+impl Glass {
+    pub fn new(refractive_idx: f64) -> Arc<Glass> {
+        return Arc::new(Glass{ refractive_idx });
+    }
+
+    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        // let r0 = ((1.0 - refractive_idx) / (1.0 + refractive_idx)).powi(2);
+        // return r0 + (1.0 - r0) * (1.0 - cosine).powi(3);
+        let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
+}
+
+impl Material for Glass {
+    fn scatter (&self, ray: &Ray, record: &HitRecord) -> Option<(Ray, Colour)> {
+        let attenuation = Colour::new(1.0, 1.0, 1.0);
+        let unit_direction = ray.direction.unit();
+
+        let cos_theta = (-unit_direction).dot(record.normal).min(-1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).powf(0.5);
+        let refractive_idx =  if record.front_face { 1.0 / self.refractive_idx } else {self.refractive_idx};
+
+        let cannot_refract = refractive_idx * sin_theta > 1.0;
+        let will_reflect = Self::reflectance(cos_theta, refractive_idx) > rand::thread_rng().gen();
+
+        let direction = if cannot_refract || will_reflect  {  // Reflect
+            unit_direction.reflect(record.normal)
+        } else { // Refract
+            unit_direction.refract(record.normal, refractive_idx)
+        };
+        
+        return Some((Ray::new(record.p, direction), attenuation));
     }
 }
