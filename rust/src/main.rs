@@ -5,11 +5,10 @@ mod material;
 mod point;
 mod ray;
 mod sphere;
+mod utils;
 mod vector;
 
 use std::time::Instant;
-use std::fs::File;
-use std::io::prelude::*;
 use indicatif::ProgressBar;
 use rand::Rng;
 use rayon::prelude::*;
@@ -21,21 +20,24 @@ use hittable::{Environment, Hit};
 use camera::Camera;
 use material::{Diffuse, Glass, Metal};
 use sphere::Sphere;
+use utils::write_file;
+
+use crate::vector::Vector;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 400;
-const VIEWPORT_HEIGHT: f64 = 2.0;
+// const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 const IMAGES_DIR: &str = "images";
-const OUTPUT_IMAGE: &str = "glass";
+const OUTPUT_IMAGE: &str = "camera";
 const ANTIALIAS_SAMPLES: i64 = 25;
 const MAX_DEPTH: i32 = 50;
+const VFOV: i32 = 20;
+const LOOK_FROM: Point = Point {v: Vector {xyz: [-2.0, 2.0, 1.0]}};
+const LOOK_AT: Point = Point{v: Vector {xyz: [0.0, 0.0, -1.0]}};
+const VUP: Vector = Vector{xyz: [0.0, 1.0, 0.0]};
 
-fn write_file(path: &String, content: &String) -> std::io::Result<()> {
-    let mut file = File::create(path)?;
-    file.write_all(content.as_bytes())?;
-    return Ok(());
-}
+
 
 fn ray_colour(ray: &Ray, world: &Environment, depth: i32) -> Colour {
     if depth <= 0 { return Colour::new(0.0, 0.0, 0.0); }
@@ -59,12 +61,14 @@ fn main() {
     let image_height = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
 
     // Camera
-    // let viewport_width = ASPECT_RATIO * VIEWPORT_HEIGHT;
-    // let horizontal = Vector::new(viewport_width, 0.0, 0.0);
-    // let vertical = Vector::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    // let lower_left_corner = origin - (horizontal / 2.0) - (vertical / 2.0) - Vector::new(0.0, 0.0, FOCAL_LENGTH);
-    let origin = Point::new(0.0, 0.0, 0.0);
-    let cam = Camera::new(origin, ASPECT_RATIO, VIEWPORT_HEIGHT, FOCAL_LENGTH);
+    let cam = Camera::new(
+        LOOK_FROM, 
+        LOOK_AT, 
+        VUP, 
+        ASPECT_RATIO,
+        FOCAL_LENGTH,
+        VFOV,
+    );
 
     // World
     let mut world = Environment{ hittables: Vec::new() };
