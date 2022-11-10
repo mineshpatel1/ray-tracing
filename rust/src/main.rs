@@ -25,11 +25,11 @@ use utils::write_file;
 use crate::vector::Vector;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 1200;
+const IMAGE_WIDTH: u32 = 400;
 
 const IMAGES_DIR: &str = "images";
 const OUTPUT_IMAGE: &str = "final";
-const ANTIALIAS_SAMPLES: i64 = 200;
+const ANTIALIAS_SAMPLES: i64 = 100;
 const MAX_DEPTH: i32 = 50;
 const V_FOV: i32 = 20;
 const LOOK_FROM: Point = Point {

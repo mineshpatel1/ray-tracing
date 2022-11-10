@@ -1,0 +1,15 @@
+[package]
+name = "ray_tracer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "ray_tracer"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.17.1", features = ["extension-module"] }
+indicatif = "0.17.1"
+rand = "0.8.5"
+rayon = "1.5.3"
