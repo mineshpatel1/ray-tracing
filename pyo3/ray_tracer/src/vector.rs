@@ -5,7 +5,6 @@ use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
 
 use crate::colour::Colour;
 
-
 #[derive(Clone, Copy)]
 pub struct Vector {
     pub xyz: [f64; 3],

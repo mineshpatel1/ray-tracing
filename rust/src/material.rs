@@ -99,3 +99,4 @@ impl Material for Glass {
         return Some((Ray::new(record.p, direction), Colour::new(1.0, 1.0, 1.0)));
     }
 }
+
